@@ -1,0 +1,878 @@
+<!-- ui.html -->
+<html>
+	<head>
+		<style>
+			.hidden {
+				display: none;
+			}
+
+			p {
+				margin: 0;
+			}
+
+			body {
+				background-color: #222222;
+				color: #e5e5e5;
+				font-family: "Fragment Mono";
+				text-transform: uppercase;
+				font-size: 0.75rem;
+				letter-spacing: 0.075rem;
+				margin: 0;
+			}
+
+			h2 {
+				font-size: 0.75rem;
+				margin-bottom: 2rem;
+				letter-spacing: 0.15rem;
+				margin: 0;
+				padding: 1rem 1rem 0 1rem;
+			}
+
+			h3 {
+				font-size: 0.75rem;
+				margin-bottom: 2rem;
+				letter-spacing: 0.075rem;
+				margin: 0;
+				color: #aaa;
+				padding: 1rem 0 1rem 0;
+			}
+
+			form {
+				padding: 1rem 1rem 72px 1rem;
+				margin: 0;
+			}
+
+			input {
+				background-color: #303030;
+				border: 1px solid #414141;
+				color: #ffffff;
+				height: 32px;
+				border-radius: 1px;
+				font-family: "Fragment Mono";
+				font-size: 0.75rem;
+				padding: 0px 0.5rem 0px 0.5rem;
+			}
+
+			input:disabled {
+				background-color: #262626;
+				border: 1px solid #303030;
+				cursor: not-allowed;
+				color: #888;
+			}
+
+			select:disabled {
+				background-color: #262626;
+				border: 1px solid #303030;
+				cursor: not-allowed;
+				color: #888;
+			}
+
+			select {
+				-webkit-appearance: none;
+				-moz-appearance: none;
+				appearance: none;
+				background-color: #303030;
+				border: 1px solid #414141;
+				color: #ffffff;
+				height: 32px;
+				border-radius: 1px;
+				font-family: "Fragment Mono";
+				font-size: 0.75rem;
+				padding: 0px 0.5rem 0px 0.5rem;
+			}
+
+			label {
+				color: #aaa;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				letter-spacing: 0.075rem;
+			}
+
+			button {
+				background-color: #303030;
+				color: #e5e5e5;
+				border: 1px solid #414141;
+				height: 40px;
+				border-radius: 1px;
+				padding: 0px 12px 0px 12px;
+				font-family: "Fragment Mono";
+				font-size: 0.75rem;
+				text-transform: uppercase;
+				letter-spacing: 0.075rem;
+			}
+
+			p {
+				color: #aaa;
+			}
+
+			.m-0 {
+				margin: 0;
+			}
+
+			.mb-4 {
+				margin-bottom: 1rem;
+			}
+
+			.mr-2 {
+				margin-right: 0.5rem;
+			}
+
+			.mr-4 {
+				margin-right: 1rem;
+			}
+
+			.inline-block {
+				display: inline-block;
+			}
+
+			.w-full {
+				width: 100%;
+			}
+
+			.flex {
+				display: flex;
+			}
+
+			.flex-row {
+				flex-direction: row;
+			}
+
+			.flex-col {
+				flex-direction: column;
+			}
+
+			.gap-1 {
+				gap: 0.25rem;
+			}
+
+			.gap-2 {
+				gap: 0.5rem;
+			}
+
+			.gap-4 {
+				gap: 1rem;
+			}
+
+			.items-center {
+				align-items: center;
+			}
+
+			.justify-between {
+				justify-content: space-between;
+			}
+
+			.justify-end {
+				justify-content: flex-end;
+			}
+
+			.cell {
+				border-bottom: 1px solid #292929;
+				padding-top: 1rem;
+				padding-bottom: 1rem;
+			}
+
+			.border-0 {
+				border-bottom: 0px;
+			}
+
+			.py-4 {
+				padding-top: 1rem;
+				padding-bottom: 1rem;
+			}
+
+			.w-4 {
+				width: 1rem;
+			}
+
+			.w-8 {
+				width: 2rem;
+			}
+
+			.w-16 {
+				width: 4rem;
+			}
+
+			.w-24 {
+				width: 6rem;
+			}
+
+			.text-success {
+				color: #439a71;
+			}
+
+			.text-warning {
+				color: #b97f1f;
+			}
+
+			.bottom-0 {
+				width: 100%;
+				background-color: #222222;
+				box-sizing: border-box;
+				position: fixed;
+				padding: 1rem;
+				bottom: 0px;
+				left: 0px;
+				border-top: 1px solid #303030;
+			}
+
+			.min-h-full {
+				min-height: 100%;
+			}
+
+			/* Container for the checkbox */
+			.custom-checkbox {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				cursor: pointer;
+				user-select: none;
+			}
+
+			/* Hide the default checkbox */
+			.custom-checkbox input {
+				opacity: 0;
+				cursor: pointer;
+				height: 0;
+				width: 0;
+			}
+
+			/* Create a custom checkbox */
+			.checkmark {
+				position: absolute;
+				right: 1rem;
+				height: 1rem;
+				width: 1rem;
+				background-color: #303030;
+				border: 1px solid #414141;
+				border-radius: 2px;
+			}
+
+			/* On hover, add a grey background color */
+			.custom-checkbox:hover input ~ .checkmark,
+			.custom-checkbox input:focus ~ .checkmark {
+				background-color: #414141;
+				border: 1px solid #666;
+			}
+
+			.custom-checkbox input:focus ~ .checkmark {
+				outline: 1px solid orange; /* Light blue focus ring */
+			}
+
+			/* When the checkbox is checked, add a blue background */
+			.custom-checkbox input:checked ~ .checkmark {
+				background-color: #666;
+			}
+
+			/* Create the checkmark/indicator (hidden when not checked) */
+			.checkmark:after {
+				content: "";
+				position: absolute;
+				display: none;
+			}
+
+			/* Show the checkmark when checked */
+			.custom-checkbox input:checked ~ .checkmark:after {
+				display: block;
+			}
+
+			/* Style the checkmark/indicator */
+			.custom-checkbox .checkmark:after {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				width: 2px;
+				height: 4px;
+				border: solid white;
+				border-width: 0 2px 2px 0;
+				transform: translate(-50%, -60%) rotate(45deg);
+			}
+		</style>
+	</head>
+	<body>
+		<h2>rosetta table controller</h2>
+
+		<!-- ----------- -->
+		<!-- Create Mode -->
+		<!-- ----------- -->
+
+		<div class="createForm" id="createForm">
+			<form class="flex flex-col">
+				<h3>// Create Mode</h3>
+				<div class="w-full flex flex-row items-center justify-between cell">
+					<label for="rows">Rows</label>
+					<input
+						class="w-24"
+						type="number"
+						id="rows"
+						name="rows"
+						min="1"
+						max="10"
+						value="3"
+					/>
+				</div>
+				<div class="w-full flex flex-row items-center justify-between cell">
+					<label for="columns">Columns</label>
+					<input
+						class="w-24"
+						type="number"
+						id="columns"
+						name="columns"
+						min="1"
+						max="10"
+						value="3"
+						onchange="updateInputs()"
+					/>
+				</div>
+				<div class="w-full flex flex-row items-center justify-between cell">
+					<label class="items-center">row resizing</label>
+					<div class="gap-1">
+						<input
+							class="w-24 hidden"
+							type="number"
+							id="resizingValue"
+							name="resizingValue"
+							value="1118"
+						/>
+						<select
+							class="w-24"
+							id="resizing"
+							name="resizing"
+							onchange="showResizingValueInput(this.value)"
+						>
+							<option value="hug">Hug</option>
+							<option value="fill">Fill</option>
+							<option value="fixed" id="resizingFixedOption">Fixed</option>
+						</select>
+					</div>
+				</div>
+				<div class="w-full flex flex-row items-center justify-between cell">
+					<label for="hasControls" class="custom-checkbox">
+						Controls
+						<input type="checkbox" id="hasControls" name="hasControls" />
+						<span class="checkmark"></span>
+					</label>
+				</div>
+				<div id="colContent" class="colContent flex flex-col">
+					<!-- Additional number inputs will be dynamically added here -->
+				</div>
+				<div class="bottom-0">
+					<button id="generate" class="w-full">Generate Table</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- --------- -->
+		<!-- Edit Mode -->
+		<!-- --------- -->
+
+		<div class="editForm hidden" id="editForm">
+			<form>
+				<h3 class="text-warning">// EDIT MODE</h3>
+				<div class="w-full flex flex-row items-center justify-between cell">
+					<label for="editRows">Rows</label>
+					<input
+						class="w-24"
+						type="number"
+						id="editRows"
+						name="editRows"
+						min="1"
+						max="10"
+						value="3"
+					/>
+				</div>
+				<div class="w-full flex flex-row items-center justify-between cell">
+					<label for="editColumns">Columns</label>
+					<input
+						class="w-24"
+						type="number"
+						id="editColumns"
+						name="editColumns"
+						min="1"
+						max="10"
+						onchange="updateInputsEdit()"
+					/>
+				</div>
+				<div class="w-full flex flex-row items-center justify-between cell">
+					<label class="items-center">row resizing</label>
+					<div class="gap-1">
+						<input
+							class="w-24 hidden"
+							type="number"
+							id="editResizingValue"
+							name="editResizingValue"
+							value="1118"
+						/>
+						<select
+							class="w-24"
+							id="editResizing"
+							name="editResizing"
+							onchange="showEditResizingValueInput(this.value)"
+						>
+							<option value="hug">Hug</option>
+							<option value="fill">Fill</option>
+							<option value="fixed" id="editResizingFixedOption">Fixed</option>
+						</select>
+					</div>
+				</div>
+				<div class="w-full flex flex-row items-center justify-between cell">
+					<label for="editHasControls" class="custom-checkbox">
+						Controls
+						<input
+							type="checkbox"
+							id="editHasControls"
+							name="editHasControls"
+						/>
+						<span class="checkmark"></span>
+					</label>
+				</div>
+				<div id="editColContent" class="editColContent flex flex-col">
+					<!-- Additional number inputs will be dynamically added here -->
+				</div>
+				<div class="bottom-0">
+					<button id="save" class="w-full">Update / Tidy Up</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- ---------- -->
+		<!-- Error Mode -->
+		<!-- ---------- -->
+
+		<div class="invalidSelection hidden" id="invalidSelection">
+			<form>
+				<h3>Invalid selection</h3>
+			</form>
+		</div>
+
+		<script>
+			/* ------------------- */
+			/* Post Generate Table */
+			/* ------------------- */
+
+			document.getElementById("generate").onclick = () => {
+				const rows = parseInt(document.getElementById("rows").value);
+				const columns = parseInt(document.getElementById("columns").value);
+				const columnValues = [];
+				const columnContent = [];
+				for (let i = 0; i < columns; i++) {
+					const inputValue = document
+						.getElementById(`col${i + 1}`)
+						.value.trim(); // Trim whitespace
+					if (inputValue.endsWith("%")) {
+						const numericValue = parseFloat(
+							inputValue.substring(0, inputValue.length - 1)
+						);
+						var totalTableWidth = parseFloat(
+							document.getElementById("resizingValue").value
+						);
+						if (!isNaN(numericValue) && !isNaN(totalTableWidth)) {
+							const calculatedValue = (numericValue / 100) * totalTableWidth;
+							columnValues.push(calculatedValue); // Store as a percentage value
+						}
+					} else if (inputValue.endsWith("fr")) {
+						const numericValue = parseFloat(
+							inputValue.substring(0, inputValue.length - 2)
+						);
+
+						columnValues.push(9999);
+					} else {
+						// Push the value directly if it doesn't end with %
+						columnValues.push(parseFloat(inputValue) || 0); // Use default value if input is not a number
+					}
+					const selectValue = document.getElementById(
+						`col${i + 1}-content`
+					).value;
+					columnContent.push(selectValue);
+				}
+				const resizing = document.getElementById("resizing").value;
+				const resizingValue = parseInt(
+					document.getElementById("resizingValue").value
+				);
+				const controls = document.getElementById("hasControls").checked
+					? "on"
+					: "off";
+
+				parent.postMessage(
+					{
+						pluginMessage: {
+							type: "generateTable",
+							rows,
+							columns,
+							columnValues,
+							columnContent,
+							resizing,
+							resizingValue,
+							controls,
+						},
+					},
+					"*"
+				);
+			};
+
+			/* ---------- */
+			/* Save Table */
+			/* ---------- */
+
+			document.getElementById("save").onclick = () => {
+				const rows = parseInt(document.getElementById("editRows").value);
+				const columns = parseInt(document.getElementById("editColumns").value);
+				const columnValues = [];
+				const columnContent = [];
+				for (let i = 0; i < columns; i++) {
+					const inputValue = document
+						.getElementById(`editCol${i + 1}`)
+						.value.trim(); // Trim whitespace
+					if (inputValue.endsWith("%")) {
+						const numericValue = parseFloat(
+							inputValue.substring(0, inputValue.length - 1)
+						);
+						var totalTableWidth = parseFloat(
+							document.getElementById("editResizingValue").value
+						);
+						if (!isNaN(numericValue) && !isNaN(totalTableWidth)) {
+							const calculatedValue = (numericValue / 100) * totalTableWidth;
+							columnValues.push(calculatedValue); // Store as a percentage value
+						}
+					} else if (inputValue.endsWith("fr")) {
+						const numericValue = parseFloat(
+							inputValue.substring(0, inputValue.length - 2)
+						);
+
+						columnValues.push(9999);
+					} else {
+						// Push the value directly if it doesn't end with %
+						columnValues.push(parseFloat(inputValue) || 0); // Use default value if input is not a number
+					}
+					const selectValue = document.getElementById(
+						`editCol${i + 1}-content`
+					).value;
+					columnContent.push(selectValue);
+				}
+				const resizing = document.getElementById("editResizing").value;
+				const resizingValue = parseInt(
+					document.getElementById("editResizingValue").value
+				);
+				const controls = document.getElementById("editHasControls").checked
+					? "on"
+					: "off";
+
+				parent.postMessage(
+					{
+						pluginMessage: {
+							type: "saveTable",
+							rows,
+							columns,
+							columnValues,
+							columnContent,
+							resizing,
+							resizingValue,
+							controls,
+						},
+					},
+					"*"
+				);
+			};
+
+			function showResizingValueInput(selectedValue) {
+				if (selectedValue === "fixed") {
+					resizingValue.classList.remove("hidden");
+				} else {
+					resizingValue.classList.add("hidden");
+					for (var i = 0; i < colContent.children.length; i++) {
+						var input = colContent.children[i].querySelector("input");
+						input.value = "";
+					}
+				}
+			}
+
+			function showEditResizingValueInput(selectedValue) {
+				if (selectedValue === "fixed") {
+					editResizingValue.classList.remove("hidden");
+				} else {
+					editResizingValue.classList.add("hidden");
+					for (var i = 0; i < editColContent.children.length; i++) {
+						var input = editColContent.children[i].querySelector("input");
+						input.value = "";
+					}
+				}
+			}
+
+			function changeToFixed(inputId) {
+				var inputElement = document.getElementById(inputId);
+				var value = inputElement.value;
+				if (
+					value.charAt(value.length - 1) === "%" ||
+					value.charAt(value.length - 1) === "r"
+				) {
+					var numericValue = parseFloat(value.substring(0, value.length - 1));
+					document.getElementById("resizingFixedOption").selected = true;
+					document.getElementById("resizingValue").classList.remove("hidden");
+				}
+			}
+
+			function editChangeToFixed(inputId) {
+				var inputElement = document.getElementById(inputId);
+				var value = inputElement.value;
+				if (
+					value.charAt(value.length - 1) === "%" ||
+					value.charAt(value.length - 1) === "r"
+				) {
+					var numericValue = parseFloat(value.substring(0, value.length - 1));
+					document.getElementById("editResizingFixedOption").selected = true;
+					document
+						.getElementById("editResizingValue")
+						.classList.remove("hidden");
+				}
+			}
+
+			function updateInputs() {
+				var columns = parseInt(document.getElementById("columns").value);
+				var colContent = document.getElementById("colContent");
+
+				// Store the values of existing inputs and selects
+				var existingValues = {};
+				for (var i = 0; i < colContent.children.length; i++) {
+					var input = colContent.children[i].querySelector("input");
+					var select = colContent.children[i].querySelector("select");
+					if (input) {
+						existingValues[input.id] = input.value;
+					}
+					if (select) {
+						existingValues[select.id] = select.value;
+					}
+				}
+
+				// Clear previous inputs
+				colContent.innerHTML = "";
+
+				for (var i = 0; i < columns; i++) {
+					var div = document.createElement("div");
+					var innerDiv = document.createElement("div");
+					var br = document.createElement("br");
+					var inputLabel = document.createElement("label");
+					inputLabel.name = `column_${i + 1}`;
+					inputLabel.innerHTML = `col ${i + 1}`;
+					var input = document.createElement("input");
+					input.type = "text"; // Change type to text for column values
+					input.id = `col${i + 1}`;
+					input.name = `column_${i + 1}`;
+					input.placeholder = `auto`;
+					input.setAttribute("onchange", `changeToFixed('col${i + 1}')`);
+
+					// Restore previous value if exists
+					if (existingValues[input.id]) {
+						input.value = existingValues[input.id];
+					}
+
+					var select = document.createElement("select");
+					select.id = `col${i + 1}-content`;
+					select.name = `column_${i + 1}-content`;
+
+					// Create and add options to the select element
+					var optionText = document.createElement("option");
+					optionText.value = "Text";
+					optionText.text = "Text";
+					select.appendChild(optionText);
+
+					var optionChip = document.createElement("option");
+					optionChip.value = "Chip";
+					optionChip.text = "Chip";
+					select.appendChild(optionChip);
+
+					var optionButton = document.createElement("option");
+					optionButton.value = "Button";
+					optionButton.text = "Button";
+					select.appendChild(optionButton);
+
+					var optionPlaceholder = document.createElement("option");
+					optionPlaceholder.value = "Placeholder";
+					optionPlaceholder.text = "Placeholder";
+					select.appendChild(optionPlaceholder);
+
+					// Restore previous value if exists
+					if (existingValues[select.id]) {
+						select.value = existingValues[select.id];
+					}
+
+					div.classList.add("flex", "flex-row", "cell", "justify-between");
+					input.classList.add("w-24");
+					select.classList.add("w-24");
+					div.appendChild(inputLabel);
+					innerDiv.appendChild(input);
+					innerDiv.appendChild(select);
+					innerDiv.classList.add("flex", "flex-row", "items-center", "gap-2");
+					div.appendChild(innerDiv);
+
+					colContent.appendChild(div);
+				}
+			}
+
+			function updateInputsEdit() {
+				var columns = parseInt(document.getElementById("editColumns").value);
+				var editColContent = document.getElementById("editColContent");
+
+				// Store the values of existing inputs and selects
+				var existingValues = {};
+				for (var i = 0; i < editColContent.children.length; i++) {
+					var input = editColContent.children[i].querySelector("input");
+					var select = editColContent.children[i].querySelector("select");
+					if (input) {
+						existingValues[input.id] = input.value;
+					}
+					if (select) {
+						existingValues[select.id] = select.value;
+					}
+				}
+
+				// Clear previous inputs
+				editColContent.innerHTML = "";
+
+				for (var i = 0; i < columns; i++) {
+					var div = document.createElement("div");
+					var innerDiv = document.createElement("div");
+					var br = document.createElement("br");
+					var inputLabel = document.createElement("label");
+					inputLabel.name = `column_${i + 1}`;
+					inputLabel.innerHTML = `col ${i + 1}`;
+					var input = document.createElement("input");
+					input.type = "text"; // Change type to text for column values
+					input.id = `editCol${i + 1}`;
+					input.name = `column_${i + 1}`;
+					input.placeholder = `auto`;
+					input.setAttribute("onchange", `changeToFixed('editCol${i + 1}')`);
+
+					// Restore previous value if exists
+					if (existingValues[input.id]) {
+						input.value = existingValues[input.id];
+					}
+
+					var select = document.createElement("select");
+					select.id = `editCol${i + 1}-content`;
+					select.name = `editColumn_${i + 1}-content`;
+
+					// Create and add options to the select element
+					var optionText = document.createElement("option");
+					optionText.value = "Text";
+					optionText.text = "Text";
+					select.appendChild(optionText);
+
+					var optionChip = document.createElement("option");
+					optionChip.value = "Chip";
+					optionChip.text = "Chip";
+					select.appendChild(optionChip);
+
+					var optionButton = document.createElement("option");
+					optionButton.value = "Button";
+					optionButton.text = "Button";
+					select.appendChild(optionButton);
+
+					var optionPlaceholder = document.createElement("option");
+					optionPlaceholder.value = "Placeholder";
+					optionPlaceholder.text = "Placeholder";
+					select.appendChild(optionPlaceholder);
+
+					// Restore previous value if exists
+					if (existingValues[select.id]) {
+						select.value = existingValues[select.id];
+					}
+
+					div.classList.add("flex", "flex-row", "cell", "justify-between");
+					input.classList.add("w-24");
+					select.classList.add("w-24");
+					div.appendChild(inputLabel);
+					innerDiv.appendChild(input);
+					innerDiv.appendChild(select);
+					innerDiv.classList.add("flex", "flex-row", "items-center", "gap-2");
+					div.appendChild(innerDiv);
+
+					editColContent.appendChild(div);
+				}
+			}
+
+			// Call updateInputs initially to populate the form
+			updateInputs();
+
+			window.onmessage = async (event) => {
+				const message = event.data.pluginMessage;
+
+				if (message.selection.length > 0 && message.valid == "valid") {
+					// Hide create form
+					const createForm = document.getElementById("createForm");
+					createForm.classList.add("hidden");
+
+					// Reveal edit form
+					const editForm = document.getElementById("editForm");
+					editForm.classList.remove("hidden");
+
+					// Update the "Has Controls" checkbox
+					const editHasControlsCheckbox =
+						document.getElementById("editHasControls");
+					editHasControlsCheckbox.checked = message.controls === "on";
+
+					// Hide invalid form
+					const invalid = document.getElementById("invalidSelection");
+					invalid.classList.add("hidden");
+
+					const initialEditColumnCount = document.getElementById("editColumns");
+					initialEditColumnCount.value = message.selectedColumnContents.length;
+					const initialEditRowCount = document.getElementById("editRows");
+					initialEditRowCount.value = message.rowCount;
+					updateInputsEdit();
+
+					// Iterate through each column content and update corresponding <select> inputs
+					for (let i = 0; i < message.selectedColumnContents.length; i++) {
+						const columnIndex = i + 1;
+						const selectInput = document.getElementById(
+							`editCol${columnIndex}-content`
+						);
+						const columnContent = message.selectedColumnContents[i];
+
+						// Find the option with the corresponding value and set it as selected
+						for (let j = 0; j < selectInput.options.length; j++) {
+							if (selectInput.options[j].value === columnContent) {
+								selectInput.selectedIndex = j;
+								break;
+							}
+						}
+
+						// Update the width input for this column
+						const widthInput = document.getElementById(`editCol${columnIndex}`);
+
+						if (widthInput) {
+							if (message.columnWidths[i] === 999) {
+								widthInput.value = "Fill";
+							} else {
+								widthInput.value = message.columnWidths[i];
+							}
+						}
+					}
+				} else if (message.valid == "invalid") {
+					// Hide create form
+					const createForm = document.getElementById("createForm");
+					createForm.classList.add("hidden");
+
+					// Hide edit form
+					const editForm = document.getElementById("editForm");
+					editForm.classList.add("hidden");
+
+					// Reveal invalid form
+					const invalid = document.getElementById("invalidSelection");
+					invalid.classList.remove("hidden");
+				} else {
+					// Hide edit form
+					const editForm = document.getElementById("editForm");
+					editForm.classList.add("hidden");
+
+					// Reveal create form
+					const createForm = document.getElementById("createForm");
+					createForm.classList.remove("hidden");
+
+					// Hide invalid form
+					const invalid = document.getElementById("invalidSelection");
+					invalid.classList.add("hidden");
+				}
+			};
+		</script>
+	</body>
+</html>
