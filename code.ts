@@ -9,6 +9,7 @@ interface Table {
 	resizing: string;
 	resizingValue: number;
 	controls: string;
+	selectable: string;
 }
 
 const placeholderKey = "da46e04ae5b772b2dd30fba52d8dc28fcbfca356";
@@ -16,6 +17,7 @@ const chipKey = "8618d3bb686bcfbb33425f4b42704f1264fcdf46";
 const buttonKey = "a71c22b65bd0196cb0e0607116fec86e868eef2c";
 const textKey = "60c7eaa5339ef7b05e3e31654d321ba7b7464384";
 const controlsKey = "9374940291a35821c2e09cdec0dab07fad9c050c";
+const checkboxKey = "ffa52dadd0bd34b004e2b3cab3d2d07378e9abbf";
 
 const paddingX = 11;
 const paddingY = 11;
@@ -29,6 +31,7 @@ figma.ui.onmessage = async (msg: Table) => {
 	const button = await figma.importComponentSetByKeyAsync(buttonKey);
 	const text = await figma.importComponentSetByKeyAsync(textKey);
 	const tableControl = await figma.importComponentSetByKeyAsync(controlsKey);
+	const checkbox = await figma.importComponentSetByKeyAsync(checkboxKey);
 
 	//////////////////////
 	//                  //
@@ -47,6 +50,7 @@ figma.ui.onmessage = async (msg: Table) => {
 			resizing,
 			resizingValue,
 			controls,
+			selectable,
 		} = msg;
 
 		// Create the Table frame
@@ -79,6 +83,23 @@ figma.ui.onmessage = async (msg: Table) => {
 
 		const bodyCellWidths: number[] = [];
 
+		if (selectable === "on") {
+			const checkboxHeaderCell = figma.createFrame();
+			checkboxHeaderCell.name = `[Checkbox] Header Cell`;
+			checkboxHeaderCell.layoutMode = "HORIZONTAL";
+			checkboxHeaderCell.counterAxisAlignItems = "CENTER";
+			checkboxHeaderCell.primaryAxisSizingMode = "FIXED";
+			checkboxHeaderCell.counterAxisSizingMode = "FIXED";
+			checkboxHeaderCell.resize(44, checkboxHeaderCell.height); // Set width to 44px
+			checkboxHeaderCell.layoutAlign = "STRETCH"; // Fill vertical height
+
+			// You might want to add a specific header content for the checkbox column
+			// For example, a "Select All" checkbox or just leave it empty
+
+			headerRow.appendChild(checkboxHeaderCell);
+			bodyCellWidths.push(44); // Add checkbox cell width to bodyCellWidths
+		}
+
 		for (let col = 0; col < columns; col++) {
 			const headerCell = figma.createFrame();
 			headerCell.name = `[Header] Cell ${col + 1}`;
@@ -105,6 +126,28 @@ figma.ui.onmessage = async (msg: Table) => {
 			rowFrame.layoutMode = "HORIZONTAL"; // Apply horizontal auto layout
 			rowFrame.counterAxisSizingMode = "AUTO"; // Adjust size based on content
 			rowFrame.primaryAxisAlignItems = "MIN"; // Align children to the left
+
+			if (selectable === "on") {
+				const checkboxCell = figma.createFrame();
+				checkboxCell.name = `[Checkbox] Cell`;
+				checkboxCell.layoutMode = "HORIZONTAL";
+				checkboxCell.counterAxisAlignItems = "CENTER";
+				checkboxCell.counterAxisSizingMode = "AUTO";
+				checkboxCell.primaryAxisSizingMode = "FIXED";
+				checkboxCell.resize(44, checkboxCell.height);
+				checkboxCell.layoutAlign = "STRETCH";
+				checkboxCell.paddingLeft = paddingX;
+				checkboxCell.paddingRight = paddingX;
+				checkboxCell.paddingTop = paddingY;
+				checkboxCell.paddingBottom = paddingY;
+
+				// Add a checkbox instance to the cell
+				const checkboxInstance = checkbox.defaultVariant.createInstance();
+				checkboxInstance.layoutAlign = "CENTER";
+				checkboxCell.appendChild(checkboxInstance);
+
+				rowFrame.appendChild(checkboxCell);
+			}
 
 			// Create cells for columns within the row
 			for (let col = 0; col < columns; col++) {
@@ -162,7 +205,7 @@ figma.ui.onmessage = async (msg: Table) => {
 			}
 
 			//  Cleans up the column widths from iteration
-			bodyCellWidths.splice(columns);
+			// bodyCellWidths.splice(columns);
 
 			// Append the row frame to the table container
 			tableContainer.appendChild(rowFrame);
@@ -189,15 +232,21 @@ figma.ui.onmessage = async (msg: Table) => {
 		}
 
 		// Resize header cells to body cell widths
-
 		const headerCells = headerRow.children;
+		const headerStartIndex = selectable === "on" ? 1 : 0;
+		const bodyWidthStartIndex = selectable === "on" ? 1 : 0;
+
 		for (let col = 0; col < columns; col++) {
-			const headerCell = headerCells[col] as FrameNode;
-			const bodyCellWidth = bodyCellWidths[col];
+			const headerCell = headerCells[col + headerStartIndex] as FrameNode;
+			const bodyCellWidth = bodyCellWidths[col + bodyWidthStartIndex];
 
 			if (columnValues[col] > 998 || columnValues[col] < 0) {
 				headerCell.layoutGrow = 1;
+			} else if (columnValues[col] > 0) {
+				headerCell.primaryAxisSizingMode = "FIXED";
+				headerCell.resize(columnValues[col], headerCell.height);
 			} else {
+				headerCell.primaryAxisSizingMode = "FIXED";
 				headerCell.resize(bodyCellWidth, headerCell.height);
 			}
 
@@ -249,14 +298,13 @@ figma.ui.onmessage = async (msg: Table) => {
 			resizing,
 			resizingValue,
 			controls,
+			selectable,
 		} = msg;
 
 		// Controls
 		// Check if table has controls, then add or remove
-
 		const hasExistingControls =
 			selectedTable.children[0].name === "Table Controls";
-
 		if (controls === "on" && !hasExistingControls) {
 			const tableControlsInstance =
 				tableControl.defaultVariant.createInstance();
@@ -267,13 +315,11 @@ figma.ui.onmessage = async (msg: Table) => {
 		}
 
 		// Updates the count of rows, depending if controls is counted
-
 		const startRowIndex = controls === "on" ? 1 : 0;
 		const bodyStartIndex = startRowIndex + 1;
 
 		// Header cells
 		// Check for header
-
 		let headerRow: FrameNode;
 		if (
 			selectedTable.children[startRowIndex] &&
@@ -290,9 +336,20 @@ figma.ui.onmessage = async (msg: Table) => {
 			selectedTable.insertChild(startRowIndex, headerRow);
 		}
 
+		// Handle selectable feature
+		const hasExistingCheckbox =
+			headerRow.children[0].name.includes("[Checkbox]");
+		if (selectable === "on" && !hasExistingCheckbox) {
+			// Add checkbox column
+			addCheckboxColumn(selectedTable, startRowIndex);
+		} else if (selectable === "off" && hasExistingCheckbox) {
+			// Remove checkbox column
+			removeCheckboxColumn(selectedTable, startRowIndex);
+		}
+
 		// Columns
 		// Update column count for all rows
-
+		const totalColumns = selectable === "on" ? columns + 1 : columns;
 		const existingColumnCount = headerRow.children.length;
 		for (
 			let rowIndex = startRowIndex;
@@ -301,8 +358,17 @@ figma.ui.onmessage = async (msg: Table) => {
 		) {
 			const row = selectedTable.children[rowIndex] as FrameNode;
 
+			// Remove excess columns first
+			while (row.children.length > totalColumns) {
+				row.children[row.children.length - 1].remove();
+			}
+
 			// Add new columns
-			for (let colIndex = existingColumnCount; colIndex < columns; colIndex++) {
+			for (
+				let colIndex = existingColumnCount;
+				colIndex < totalColumns;
+				colIndex++
+			) {
 				const newCell = figma.createFrame();
 				newCell.layoutMode = "HORIZONTAL";
 				newCell.counterAxisAlignItems = "CENTER";
@@ -317,63 +383,19 @@ figma.ui.onmessage = async (msg: Table) => {
 					const headerTextInstance = text.defaultVariant.createInstance();
 					headerTextInstance.setProperties({ "Text Style": "Label" });
 					newCell.appendChild(headerTextInstance);
-					newCell.name = `[Header] Cell ${colIndex + 1}`;
 				} else {
 					// Body cells
-					const content = columnContent[colIndex];
-					if (content === "Chip") {
-						const chipInstance = chip.defaultVariant.createInstance();
-						newCell.appendChild(chipInstance);
-						newCell.layoutAlign = "STRETCH";
-						newCell.name = `[Chip] Cell`;
-					} else if (content === "Button") {
-						const buttonInstance = button.defaultVariant.createInstance();
-						buttonInstance.setProperties({
-							Size: "Medium",
-							Variant: "Tertiary",
-						});
-						newCell.appendChild(buttonInstance);
-						newCell.name = `[Button] Cell`;
-					} else if (content === "Placeholder") {
-						const instance = placeholder.createInstance();
-						newCell.appendChild(instance);
-						newCell.name = `[Placeholder] Cell`;
-					} else if (content === "Text") {
-						const textInstance = text.defaultVariant.createInstance();
-						textInstance.setProperties({ "Text Style": "Body" });
-						newCell.appendChild(textInstance);
-						newCell.layoutAlign = "STRETCH";
-						newCell.name = `[Text] Cell`;
-					}
+					const contentIndex = selectable === "on" ? colIndex - 1 : colIndex;
+					const content = columnContent[contentIndex];
+					createCellContent(newCell, content);
 				}
 
 				row.appendChild(newCell);
 			}
-
-			// Remove excess columns
-			while (row.children.length > columns) {
-				row.children[row.children.length - 1].remove();
-			}
 		}
 
-		// Update cell contents and sizes for all cells
-
-		const updateMaxWidth = (cell: FrameNode, colIndex: number) => {
-			if (cell.primaryAxisSizingMode === "AUTO") {
-				const contentWidth = cell.children[0]?.width || 0;
-				columnMaxWidths[colIndex] = Math.max(
-					columnMaxWidths[colIndex],
-					contentWidth + paddingX * 2
-				);
-			} else {
-				columnMaxWidths[colIndex] = Math.max(
-					columnMaxWidths[colIndex],
-					cell.width
-				);
-			}
-		};
-
-		// First pass: Update cell contents and apply layout properties
+		// Update cell contents and apply layout properties
+		const columnMaxWidths = new Array(totalColumns).fill(0);
 
 		for (
 			let rowIndex = startRowIndex;
@@ -381,131 +403,216 @@ figma.ui.onmessage = async (msg: Table) => {
 			rowIndex++
 		) {
 			const row = selectedTable.children[rowIndex] as FrameNode;
-			for (let colIndex = 0; colIndex < columns; colIndex++) {
+			for (let colIndex = 0; colIndex < totalColumns; colIndex++) {
 				const cell = row.children[colIndex] as FrameNode;
 
-				if (rowIndex > startRowIndex) {
-					const content = columnContent[colIndex];
+				if (rowIndex === startRowIndex) {
+					// Header row
+					if (colIndex === 0 && selectable === "on") {
+						cell.name = "[Checkbox] Header Cell";
+					} else {
+						cell.name = `[Header] Cell ${
+							selectable === "on" ? colIndex : colIndex + 1
+						}`;
+					}
+				} else if (colIndex === 0 && selectable === "on") {
+					cell.name = "[Checkbox] Cell";
+				} else {
+					const contentIndex = selectable === "on" ? colIndex - 1 : colIndex;
+					const newContent = columnContent[contentIndex];
 					const currentCellType = cell.name.match(/\[(.*?)\]/)?.[1] || "";
 
-					// Check if there is a diff in content
-
-					if (content !== currentCellType) {
+					if (newContent !== currentCellType) {
 						while (cell.children.length > 0) {
 							cell.children[0].remove();
 						}
-
-						if (content === "Chip") {
-							const chipInstance = chip.defaultVariant.createInstance();
-							cell.appendChild(chipInstance);
-							cell.name = `[Chip] Cell`;
-						} else if (content === "Button") {
-							const buttonInstance = button.defaultVariant.createInstance();
-							buttonInstance.setProperties({
-								Size: "Medium",
-								Variant: "Tertiary",
-							});
-							cell.appendChild(buttonInstance);
-							cell.name = `[Button] Cell`;
-						} else if (content === "Placeholder") {
-							const instance = placeholder.createInstance();
-							cell.appendChild(instance);
-							cell.name = `[Placeholder] Cell`;
-						} else if (content === "Text") {
-							const textInstance = text.defaultVariant.createInstance();
-							textInstance.setProperties({ "Text Style": "Body" });
-							cell.appendChild(textInstance);
-							cell.name = `[Text] Cell`;
-						}
+						createCellContent(cell, newContent);
+						cell.name = `[${newContent}] Cell`;
 					}
 
-					// Apply autolayout formatting
-
-					if (content === "Text") {
-						cell.layoutAlign = "STRETCH";
-						cell.layoutGrow = 1;
-						cell.primaryAxisSizingMode = "FIXED";
-						if (cell.children[0] && cell.children[0].type === "TEXT") {
-							(cell.children[0] as TextNode).layoutAlign = "STRETCH";
-						}
-					} else {
-						cell.layoutAlign = "CENTER";
-						cell.layoutGrow = 0;
-						cell.primaryAxisSizingMode = "AUTO";
+					if (!cell.name.includes("Checkbox")) {
+						applyCellLayout(cell, newContent, columnValues[contentIndex]);
 					}
-
-					// Update cell size
-
-					if (columnValues[colIndex] > 0 && columnValues[colIndex] < 999) {
-						cell.primaryAxisSizingMode = "FIXED";
-						cell.layoutGrow = 0;
-						cell.resize(columnValues[colIndex], cell.height);
-					} else if (columnValues[colIndex] >= 999) {
-						cell.primaryAxisSizingMode = "AUTO";
-						cell.layoutGrow = 1;
-					} else {
-						cell.primaryAxisSizingMode = "AUTO";
-						cell.layoutGrow = 0;
-					}
-
-					console.log(
-						`Cell updated: width = ${cell.width}, primaryAxisSizingMode = ${cell.primaryAxisSizingMode}, layoutGrow = ${cell.layoutGrow}`
-					);
 				}
 			}
 		}
 
-		// Second pass: Calculate max widths for body cells
-
-		const columnMaxWidths = new Array(columns).fill(0);
+		// Second pass: Calculate max widths
 		for (
 			let rowIndex = bodyStartIndex;
 			rowIndex < selectedTable.children.length;
 			rowIndex++
 		) {
 			const row = selectedTable.children[rowIndex] as FrameNode;
-			for (let colIndex = 0; colIndex < columns; colIndex++) {
+			for (let colIndex = 0; colIndex < totalColumns; colIndex++) {
 				const cell = row.children[colIndex] as FrameNode;
-				updateMaxWidth(cell, colIndex);
+				updateMaxWidth(cell, colIndex, columnMaxWidths);
 			}
 		}
 
 		// Update header cells
-
-		for (let colIndex = 0; colIndex < columns; colIndex++) {
+		for (let colIndex = 0; colIndex < totalColumns; colIndex++) {
 			const headerCell = headerRow.children[colIndex] as FrameNode;
+			const contentIndex = selectable === "on" ? colIndex - 1 : colIndex;
 
-			if (columnValues[colIndex] > 0 && columnValues[colIndex] < 999) {
+			if (colIndex === 0 && selectable === "on") {
+				// Checkbox header cell
+				headerCell.resize(44, headerCell.height);
 				headerCell.primaryAxisSizingMode = "FIXED";
 				headerCell.layoutGrow = 0;
-				headerCell.resize(columnValues[colIndex], headerCell.height);
-			} else if (columnValues[colIndex] >= 999) {
-				headerCell.primaryAxisSizingMode = "AUTO";
-				headerCell.layoutGrow = 1;
 			} else {
-				headerCell.primaryAxisSizingMode = "FIXED";
-				headerCell.layoutGrow = 0;
-				headerCell.resize(columnMaxWidths[colIndex], headerCell.height);
+				applyCellLayout(headerCell, "Header", columnValues[contentIndex]);
+				if (columnValues[contentIndex] === 0) {
+					headerCell.resize(columnMaxWidths[colIndex], headerCell.height);
+				}
 			}
 		}
 
-		console.log("Final column widths:", columnMaxWidths);
-
-		// Rows
 		// Update row count
+		updateRowCount(selectedTable, rows, controls, totalColumns, columnContent);
 
+		// Apply table resizing if needed
+		if (resizing == "fixed" && resizingValue > 0) {
+			selectedTable.counterAxisSizingMode = "FIXED";
+			selectedTable.resize(resizingValue, selectedTable.height);
+		}
+
+		figma.closePlugin();
+	}
+
+	function addCheckboxColumn(table: FrameNode, startRowIndex: number) {
+		for (let i = startRowIndex; i < table.children.length; i++) {
+			const row = table.children[i] as FrameNode;
+			const checkboxCell = figma.createFrame();
+			checkboxCell.name =
+				i === startRowIndex ? "[Checkbox] Header Cell" : "[Checkbox] Cell";
+			checkboxCell.layoutMode = "HORIZONTAL";
+			checkboxCell.counterAxisAlignItems = "CENTER";
+			checkboxCell.primaryAxisSizingMode = "FIXED";
+			checkboxCell.resize(44, checkboxCell.height);
+			checkboxCell.layoutAlign = "STRETCH";
+			checkboxCell.paddingLeft = paddingX;
+			checkboxCell.paddingRight = paddingX;
+			checkboxCell.paddingTop = paddingY;
+			checkboxCell.paddingBottom = paddingY;
+
+			if (i > startRowIndex) {
+				const checkboxInstance = checkbox.defaultVariant.createInstance();
+				checkboxInstance.layoutAlign = "CENTER";
+				checkboxCell.appendChild(checkboxInstance);
+			}
+
+			row.insertChild(0, checkboxCell);
+		}
+	}
+
+	function removeCheckboxColumn(table: FrameNode, startRowIndex: number) {
+		for (let i = startRowIndex; i < table.children.length; i++) {
+			const row = table.children[i] as FrameNode;
+			if (row.children[0].name.includes("[Checkbox]")) {
+				row.children[0].remove();
+			}
+
+			// Rename remaining cells in the header row
+			if (i === startRowIndex) {
+				for (let j = 0; j < row.children.length; j++) {
+					const cell = row.children[j] as FrameNode;
+					cell.name = `[Header] Cell ${j + 1}`;
+				}
+			}
+		}
+	}
+
+	function createCellContent(cell: FrameNode, content: string) {
+		if (content === "Chip") {
+			const chipInstance = chip.defaultVariant.createInstance();
+			cell.appendChild(chipInstance);
+		} else if (content === "Button") {
+			const buttonInstance = button.defaultVariant.createInstance();
+			buttonInstance.setProperties({ Size: "Medium", Variant: "Tertiary" });
+			cell.appendChild(buttonInstance);
+		} else if (content === "Placeholder") {
+			const instance = placeholder.createInstance();
+			cell.appendChild(instance);
+		} else if (content === "Text") {
+			const textInstance = text.defaultVariant.createInstance();
+			textInstance.setProperties({ "Text Style": "Body" });
+			cell.appendChild(textInstance);
+		}
+	}
+
+	function applyCellLayout(
+		cell: FrameNode,
+		content: string,
+		columnValue: number
+	) {
+		if (content === "Text") {
+			cell.layoutAlign = "STRETCH";
+			cell.layoutGrow = 1;
+			cell.primaryAxisSizingMode = "FIXED";
+			if (cell.children[0] && cell.children[0].type === "TEXT") {
+				(cell.children[0] as TextNode).layoutAlign = "STRETCH";
+			}
+		} else {
+			cell.layoutAlign = "CENTER";
+			cell.layoutGrow = 0;
+			cell.primaryAxisSizingMode = "AUTO";
+		}
+
+		if (columnValue > 0 && columnValue < 999) {
+			cell.primaryAxisSizingMode = "FIXED";
+			cell.layoutGrow = 0;
+			cell.resize(columnValue, cell.height);
+		} else if (columnValue >= 999) {
+			cell.primaryAxisSizingMode = "AUTO";
+			cell.layoutGrow = 1;
+		} else {
+			cell.primaryAxisSizingMode = "AUTO";
+			cell.layoutGrow = 0;
+		}
+	}
+
+	function updateMaxWidth(
+		cell: FrameNode,
+		colIndex: number,
+		columnMaxWidths: number[]
+	) {
+		if (cell.primaryAxisSizingMode === "AUTO") {
+			const contentWidth = cell.children[0]?.width || 0;
+			columnMaxWidths[colIndex] = Math.max(
+				columnMaxWidths[colIndex],
+				contentWidth + paddingX * 2
+			);
+		} else {
+			columnMaxWidths[colIndex] = Math.max(
+				columnMaxWidths[colIndex],
+				cell.width
+			);
+		}
+	}
+
+	function updateRowCount(
+		table: FrameNode,
+		rows: number,
+		controls: string,
+		totalColumns: number,
+		columnContent: string[]
+	) {
+		const startRowIndex = controls === "on" ? 1 : 0;
+		const bodyStartIndex = startRowIndex + 1;
 		const totalRequiredRows = rows + (controls === "on" ? 2 : 1);
-		if (selectedTable.children.length < totalRequiredRows) {
+
+		if (table.children.length < totalRequiredRows) {
 			// Add rows
-			for (let i = selectedTable.children.length; i < totalRequiredRows; i++) {
+			for (let i = table.children.length; i < totalRequiredRows; i++) {
 				const newRow = figma.createFrame();
 				newRow.layoutMode = "HORIZONTAL";
 				newRow.counterAxisSizingMode = "AUTO";
 				newRow.primaryAxisAlignItems = "MIN";
 				newRow.name = `Row ${i - bodyStartIndex + 1}`;
 
-				// Add cells to the new row based on the number of columns
-				for (let j = 0; j < columns; j++) {
+				// Add cells to the new row
+				for (let j = 0; j < totalColumns; j++) {
 					const newCell = figma.createFrame();
 					newCell.layoutMode = "HORIZONTAL";
 					newCell.counterAxisAlignItems = "CENTER";
@@ -515,55 +622,28 @@ figma.ui.onmessage = async (msg: Table) => {
 					newCell.paddingTop = paddingY;
 					newCell.paddingBottom = paddingY;
 
-					if (columnContent[j] === "Chip") {
-						const chipInstance = chip.defaultVariant.createInstance();
-						newCell.appendChild(chipInstance);
-						newCell.layoutAlign = "STRETCH";
-						newCell.name = `[Chip] Cell`;
-					}
-					if (columnContent[j] === "Button") {
-						const buttonInstance = button.defaultVariant.createInstance();
-						buttonInstance.setProperties({
-							Size: "Medium",
-							Variant: "Tertiary",
-						});
-						newCell.appendChild(buttonInstance);
-						newCell.name = `[Button] Cell`;
-					}
-					if (columnContent[j] === "Placeholder") {
-						const instance = placeholder.createInstance();
-						newCell.appendChild(instance);
-						newCell.name = `[Placeholder] Cell`;
-					}
-					if (columnContent[j] === "Text") {
-						const textInstance = text.defaultVariant.createInstance();
-						textInstance.setProperties({ "Text Style": "Body" });
-						newCell.appendChild(textInstance);
-						newCell.layoutAlign = "STRETCH"; // Apply horizontal auto layout
-						newCell.name = `[Text] Cell`;
+					if (j === 0 && totalColumns > columnContent.length) {
+						// This is a checkbox cell
+						newCell.name = "[Checkbox] Cell";
+						const checkboxInstance = checkbox.defaultVariant.createInstance();
+						newCell.appendChild(checkboxInstance);
+					} else {
+						const contentIndex =
+							totalColumns > columnContent.length ? j - 1 : j;
+						createCellContent(newCell, columnContent[contentIndex]);
 					}
 
 					newRow.appendChild(newCell);
 				}
 
-				// Set row name
-				newRow.name = `Row ${i + 1}`;
-				selectedTable.appendChild(newRow);
+				table.appendChild(newRow);
 			}
-		} else if (selectedTable.children.length > totalRequiredRows) {
+		} else if (table.children.length > totalRequiredRows) {
 			// Remove excess rows
-			while (selectedTable.children.length > totalRequiredRows) {
-				selectedTable.children[selectedTable.children.length - 1].remove();
+			while (table.children.length > totalRequiredRows) {
+				table.children[table.children.length - 1].remove();
 			}
 		}
-
-		// Apply table resizing if needed
-		if (resizing == "fixed" && resizingValue > 0) {
-			selectedTable.counterAxisSizingMode = "FIXED";
-			selectedTable.resize(resizingValue, selectedTable.height);
-		}
-
-		figma.closePlugin();
 	}
 
 	figma.closePlugin();
@@ -588,27 +668,30 @@ figma.on("selectionchange", () => {
 			// Check if the selected layer is a frame (table)
 			if (selectedLayer.type === "FRAME" && selectedLayer.name === "Table") {
 				const tableFrame = selectedLayer as FrameNode;
-				let headerRowIndex = 0;
-				let firstBodyRowIndex = 1;
+				let headerRow = tableFrame.children[0] as FrameNode;
+				let firstBodyRow = tableFrame.children[1] as FrameNode;
+				let bodyRows = tableFrame.children.slice(1) as FrameNode[];
 				let hasControls = "off";
+				let selectable = "off";
 
-				// Check for controls
-				if (tableFrame.children[0].name === "Table Controls") {
-					headerRowIndex = 1;
-					firstBodyRowIndex = 2;
+				if (selectedLayer.children[0].name === "Table Controls") {
+					headerRow = tableFrame.children[1] as FrameNode;
+					firstBodyRow = tableFrame.children[2] as FrameNode;
+					bodyRows = tableFrame.children.slice(2) as FrameNode[];
 					hasControls = "on";
 				}
 
-				const headerRow = tableFrame.children[headerRowIndex] as FrameNode;
-				const bodyRows = tableFrame.children.slice(
-					firstBodyRowIndex
-				) as FrameNode[]; // All rows except header
+				// Check if the table is selectable
+				if (firstBodyRow.children[0].name === "[Checkbox] Cell") {
+					selectable = "on";
+				}
 
-				const columnCount = headerRow.children.length;
+				const totalColumnCount = headerRow.children.length;
+				const dataColumnCount =
+					selectable === "on" ? totalColumnCount - 1 : totalColumnCount;
 
 				// Initialize columnWidths array with zeros
-				const columnWidths: number[] = new Array(columnCount).fill(0);
-				const columnMaxWidths: number[] = new Array(columnCount).fill(0);
+				const columnWidths: number[] = new Array(dataColumnCount).fill(0);
 
 				// Function to update columnWidths with the widest cell
 				const updateColumnWidth = (cell: FrameNode, columnIndex: number) => {
@@ -627,7 +710,10 @@ figma.on("selectionchange", () => {
 				// Process header row
 				headerRow.children.forEach((cell, index) => {
 					if (cell.type === "FRAME") {
-						updateColumnWidth(cell, index);
+						// Skip the checkbox cell if present
+						if (index === 0 && selectable === "on") return;
+						const adjustedIndex = selectable === "on" ? index - 1 : index;
+						updateColumnWidth(cell, adjustedIndex);
 					}
 				});
 
@@ -636,26 +722,31 @@ figma.on("selectionchange", () => {
 					if (row.type === "FRAME") {
 						row.children.forEach((cell, index) => {
 							if (cell.type === "FRAME") {
-								updateColumnWidth(cell, index);
+								// Skip the checkbox cell if present
+								if (index === 0 && selectable === "on") return;
+								const adjustedIndex = selectable === "on" ? index - 1 : index;
+								updateColumnWidth(cell, adjustedIndex);
 							}
 						});
 					}
 				});
 
+				const selectedColumnContents: string[] = [];
+
 				// Extract content types from the first body row
-				const firstBodyRow = bodyRows[0];
-				const selectedColumnContents: string[] = firstBodyRow.children.map(
-					(cellFrame) => {
-						if (cellFrame.type === "FRAME") {
-							const cellName = cellFrame.name || "";
-							const contentLabelMatch = cellName.match(/\[(.*?)\]/);
-							return contentLabelMatch && contentLabelMatch.length > 1
-								? contentLabelMatch[1]
-								: "Unknown";
+				firstBodyRow.children.forEach((cellFrame, index) => {
+					if (cellFrame.type === "FRAME") {
+						// Skip the checkbox cell if present
+						if (index === 0 && selectable === "on") return;
+						const cellName = cellFrame.name || "";
+						const contentLabelMatch = cellName.match(/\[(.*?)\]/);
+						if (contentLabelMatch && contentLabelMatch.length > 1) {
+							selectedColumnContents.push(contentLabelMatch[1]);
+						} else {
+							selectedColumnContents.push("Unknown");
 						}
-						return "Unknown";
 					}
-				);
+				});
 
 				figma.ui.postMessage({
 					type: "selectionChange",
@@ -663,8 +754,11 @@ figma.on("selectionchange", () => {
 					selection,
 					selectedColumnContents,
 					columnWidths,
-					rowCount: bodyRows.length, // Exclude header from row count
+					rowCount: bodyRows.length,
 					controls: hasControls,
+					selectable: selectable,
+					totalColumnCount: totalColumnCount,
+					dataColumnCount: dataColumnCount,
 				});
 			} else {
 				figma.ui.postMessage({

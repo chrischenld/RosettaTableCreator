@@ -353,6 +353,13 @@
 						<span class="checkmark"></span>
 					</label>
 				</div>
+				<div class="w-full flex flex-row items-center justify-between cell">
+					<label for="isSelectable" class="custom-checkbox">
+						Selectable Rows
+						<input type="checkbox" id="isSelectable" name="isSelectable" />
+						<span class="checkmark"></span>
+					</label>
+				</div>
 				<div id="colContent" class="colContent flex flex-col">
 					<!-- Additional number inputs will be dynamically added here -->
 				</div>
@@ -426,6 +433,17 @@
 						<span class="checkmark"></span>
 					</label>
 				</div>
+				<div class="w-full flex flex-row items-center justify-between cell">
+					<label for="editIsSelectable" class="custom-checkbox">
+						Selectable Rows
+						<input
+							type="checkbox"
+							id="editIsSelectable"
+							name="editIsSelectable"
+						/>
+						<span class="checkmark"></span>
+					</label>
+				</div>
 				<div id="editColContent" class="editColContent flex flex-col">
 					<!-- Additional number inputs will be dynamically added here -->
 				</div>
@@ -492,6 +510,9 @@
 				const controls = document.getElementById("hasControls").checked
 					? "on"
 					: "off";
+				const selectable = document.getElementById("isSelectable").checked
+					? "on"
+					: "off";
 
 				parent.postMessage(
 					{
@@ -504,6 +525,7 @@
 							resizing,
 							resizingValue,
 							controls,
+							selectable,
 						},
 					},
 					"*"
@@ -556,6 +578,9 @@
 				const controls = document.getElementById("editHasControls").checked
 					? "on"
 					: "off";
+				const selectable = document.getElementById("editIsSelectable").checked
+					? "on"
+					: "off";
 
 				parent.postMessage(
 					{
@@ -568,6 +593,7 @@
 							resizing,
 							resizingValue,
 							controls,
+							selectable,
 						},
 					},
 					"*"
@@ -810,12 +836,17 @@
 						document.getElementById("editHasControls");
 					editHasControlsCheckbox.checked = message.controls === "on";
 
+					// Update the "Is Selectable" checkbox
+					const editIsSelectableCheckbox =
+						document.getElementById("editIsSelectable");
+					editIsSelectableCheckbox.checked = message.selectable === "on";
+
 					// Hide invalid form
 					const invalid = document.getElementById("invalidSelection");
 					invalid.classList.add("hidden");
 
 					const initialEditColumnCount = document.getElementById("editColumns");
-					initialEditColumnCount.value = message.selectedColumnContents.length;
+					initialEditColumnCount.value = message.dataColumnCount;
 					const initialEditRowCount = document.getElementById("editRows");
 					initialEditRowCount.value = message.rowCount;
 					updateInputsEdit();
@@ -843,7 +874,7 @@
 							if (message.columnWidths[i] === 999) {
 								widthInput.value = "Fill";
 							} else {
-								widthInput.value = message.columnWidths[i];
+								widthInput.value = message.columnWidths[i] || "";
 							}
 						}
 					}
